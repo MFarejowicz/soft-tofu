@@ -1,0 +1,7 @@
+.Header {
+  height: 70px;
+  background: #efefef;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
