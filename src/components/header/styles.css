@@ -3,5 +3,21 @@
   background: #efefef;
   display: flex;
   align-items: center;
+  justify-content: center;
+}
+
+.Header-title {
+  margin: 0;
+}
+
+.Header-content {
+  width: 80%;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
+}
+
+.Header-user {
+  display: flex;
+  flex-direction: column;
 }

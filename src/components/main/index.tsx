@@ -1,6 +1,9 @@
+import { Button, Typography } from "antd";
 import { useCallback } from "react";
 import { useAuthState, useSignInWithGoogle } from "react-firebase-hooks/auth";
+
 import { auth } from "../../firebase";
+
 import "./styles.css";
 
 export function Main() {
@@ -37,9 +40,13 @@ function MainLoggedOut() {
   }
 
   return (
-    <div>
-      <h1>soft tofu</h1>
-      <button onClick={() => signInWithGoogle()}>Log in</button>
+    <div className="Main-content">
+      <div className="Main-login">
+        <Typography.Title level={1}>soft tofu</Typography.Title>
+        <Button type="primary" onClick={() => signInWithGoogle()}>
+          Log in
+        </Button>
+      </div>
     </div>
   );
 }

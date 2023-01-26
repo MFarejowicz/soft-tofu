@@ -1,0 +1,11 @@
+.Footer {
+  height: 40px;
+  background: #efefef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Footer-content {
+  width: 80%;
+}

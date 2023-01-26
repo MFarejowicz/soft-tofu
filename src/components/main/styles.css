@@ -1,3 +1,12 @@
 .Main {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Main-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

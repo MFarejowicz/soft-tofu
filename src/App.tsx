@@ -1,6 +1,6 @@
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "./firebase";
 
+import { auth } from "./firebase";
 import { Footer } from "./components/footer";
 import { Header } from "./components/header";
 import { Main } from "./components/main";
