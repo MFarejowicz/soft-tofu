@@ -15,7 +15,7 @@ export function Header() {
   return (
     <header className="Header">
       <div className="Header-content">
-        <Typography.Title className="Header-title" level={2}>
+        <Typography.Title className="Header-title" level={1}>
           soft tofu
         </Typography.Title>
         <div className="Header-user">

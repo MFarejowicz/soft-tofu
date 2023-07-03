@@ -1,10 +1,11 @@
 import { Button, Typography } from "antd";
 import { User } from "firebase/auth";
 import { ref, update } from "firebase/database";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useAuthState, useSignInWithGoogle } from "react-firebase-hooks/auth";
 
 import { auth, database } from "../../firebase";
+import { ListDetail } from "../list-detail";
 import { Lists } from "../lists";
 
 import "./styles.css";
@@ -20,7 +21,13 @@ export function Main() {
 }
 
 function MainLoggedIn() {
-  return <Lists />;
+  const [selectedList, setSelectedList] = useState<string | null>(null);
+
+  if (selectedList) {
+    return <ListDetail selectedList={selectedList} setSelectedList={setSelectedList} />;
+  }
+
+  return <Lists setSelectedList={setSelectedList} />;
 }
 
 function MainLoggedOut() {

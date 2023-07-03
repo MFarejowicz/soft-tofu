@@ -1,47 +1,54 @@
-import { PlusOutlined } from "@ant-design/icons";
 import { Card, Space } from "antd";
-
-import "./styles.css";
-import { auth, database } from "../../firebase";
 import { child, push, ref, update } from "firebase/database";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { useCallback } from "react";
-import { uniqueNamesGenerator, Config, adjectives, colors, animals } from "unique-names-generator";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { adjectives, animals, colors, Config, uniqueNamesGenerator } from "unique-names-generator";
+import { PlusOutlined } from "@ant-design/icons";
+import { auth, database } from "../../firebase";
 import { useFirebase } from "../../hooks/useFirebase";
+import "./styles.css";
 
-const customConfig: Config = {
+const nameConfig: Config = {
   dictionaries: [adjectives, colors, animals],
   separator: "-",
   length: 3,
 };
 
-interface List {
+export interface List {
   name: string;
 }
 
-export function Lists() {
-  const [user] = useAuthState(auth);
-  const stuff = useFirebase(`users/${user?.uid}/lists`);
+interface Props {
+  setSelectedList: React.Dispatch<React.SetStateAction<string | null>>;
+}
 
-  console.log(stuff.value);
+export function Lists({ setSelectedList }: Props) {
+  const [user] = useAuthState(auth);
+  const lists = useFirebase<Record<string, List>>(`users/${user?.uid}/lists`);
 
   const addList = useCallback(() => {
     if (!user) {
       return;
     }
 
-    console.log("adding");
-    const name = uniqueNamesGenerator(customConfig);
+    const name = uniqueNamesGenerator(nameConfig);
     const userID = user.uid;
-    writeNewList(userID, name);
-  }, [user]);
+    const key = writeNewList(userID, name);
+
+    if (!key) {
+      // TODO: handle this
+      return;
+    }
+
+    setSelectedList(key);
+  }, [setSelectedList, user]);
 
   if (!user) {
     // TODO: deal with this
     return null;
   }
 
-  if (!stuff.value) {
+  if (!lists.value) {
     // TODO: deal with this
     return null;
   }
@@ -49,8 +56,8 @@ export function Lists() {
   return (
     <div>
       <Space wrap>
-        {Object.values(stuff.value).map((list) => (
-          <Card className="Lists-card" hoverable key={list.name}>
+        {Object.entries(lists.value).map(([key, list]) => (
+          <Card key={key} className="Lists-card" hoverable onClick={() => setSelectedList(key)}>
             {list.name}
           </Card>
         ))}
@@ -74,5 +81,7 @@ function writeNewList(userID: string, name: string) {
   const updates: Record<string, List> = {};
   updates[`${path}/${newListKey}`] = { name };
 
-  return update(ref(database), updates);
+  update(ref(database), updates);
+
+  return newListKey;
 }
