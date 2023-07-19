@@ -13273,7 +13273,7 @@ __metadata:
     typescript: ^4.4.2
     unique-names-generator: ^4.7.1
     web-vitals: ^2.1.0
-    weighted: ^1.0.0
+    wrand: ^1.2.0
   languageName: unknown
   linkType: soft
 
@@ -14545,13 +14545,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"weighted@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "weighted@npm:1.0.0"
-  checksum: 6d378cd4d613dd8919420ea4672f4ff38a36cee20fb6c89e1fe2a08958408ded694fd5c4d40b790dc470b53ba6579007418800b1368c7d09800cf3c86f341cc0
-  languageName: node
-  linkType: hard
-
 "whatwg-encoding@npm:^1.0.5":
   version: 1.0.5
   resolution: "whatwg-encoding@npm:1.0.5"
@@ -14886,6 +14879,13 @@ __metadata:
     "@types/trusted-types": ^2.0.2
     workbox-core: 6.5.4
   checksum: bc43c8d31908ab564d740eb1041180c0b0ca4d1f0a3ccde59c5764a8f96d7b08edb7df975360fd37c2bec9f3f57ca9de6c7e34fd252aa1a4a075b5b002f74f60
+  languageName: node
+  linkType: hard
+
+"wrand@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "wrand@npm:1.2.0"
+  checksum: f20a6f79e6d94db2ce07dc32545350f3a04a0c2b3829507fa6cc05259101e138047b0d57733e550761778c131515fba521f06f43f0ce4f8298cc937e46649114
   languageName: node
   linkType: hard
 

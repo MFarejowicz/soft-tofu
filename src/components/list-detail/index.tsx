@@ -6,7 +6,7 @@ import { auth, database } from "../../firebase";
 import { List, ListItem } from "../lists";
 import { useCallback, useState } from "react";
 import { push, child, ref, update } from "firebase/database";
-import weighted from "weighted";
+import { pickManyDistinct } from "wrand/lib";
 
 interface Props {
   selectedList: string;
@@ -56,15 +56,14 @@ export function ListDetail({ selectedList, setSelectedList }: Props) {
 
     const { items = {} } = list.value;
 
-    const options = Object.entries(items).map(([key, item]) => ({
-      id: key,
-      name: item.name,
+    const test = Object.entries(items).map(([key, item]) => ({
+      original: { name: item.name, id: key },
       weight: item.weight,
     }));
 
-    const res = select(options, count);
+    const e = pickManyDistinct(test, count);
 
-    setResults(res);
+    setResults(e.map((item) => item.name));
   }, [count, list.value]);
 
   if (!user) {
@@ -139,27 +138,4 @@ function writeNewItem(userID: string, listID: string, name: string) {
   update(ref(database), updates);
 
   return newItemKey;
-}
-
-function select(
-  items: {
-    id: string;
-    name: string;
-    weight: number;
-  }[],
-  count: number
-) {
-  const output = [];
-  const things = items.map((el) => ({ name: el.name, id: el.id }));
-  const weights = items.map((el) => el.weight);
-
-  for (let i = 0; i < count; i++) {
-    const res = weighted(things, weights);
-    output.push(res.name);
-    const index = things.findIndex((el) => el.id === res.id);
-    things.splice(index, 1);
-    weights.splice(index, 1);
-  }
-
-  return output;
 }

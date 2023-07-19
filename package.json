@@ -13,7 +13,7 @@
     "typescript": "^4.4.2",
     "unique-names-generator": "^4.7.1",
     "web-vitals": "^2.1.0",
-    "weighted": "^1.0.0"
+    "wrand": "^1.2.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.14.1",
