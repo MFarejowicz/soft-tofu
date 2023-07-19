@@ -13273,6 +13273,7 @@ __metadata:
     typescript: ^4.4.2
     unique-names-generator: ^4.7.1
     web-vitals: ^2.1.0
+    weighted: ^1.0.0
   languageName: unknown
   linkType: soft
 
@@ -14541,6 +14542,13 @@ __metadata:
   version: 0.1.4
   resolution: "websocket-extensions@npm:0.1.4"
   checksum: 5976835e68a86afcd64c7a9762ed85f2f27d48c488c707e67ba85e717b90fa066b98ab33c744d64255c9622d349eedecf728e65a5f921da71b58d0e9591b9038
+  languageName: node
+  linkType: hard
+
+"weighted@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "weighted@npm:1.0.0"
+  checksum: 6d378cd4d613dd8919420ea4672f4ff38a36cee20fb6c89e1fe2a08958408ded694fd5c4d40b790dc470b53ba6579007418800b1368c7d09800cf3c86f341cc0
   languageName: node
   linkType: hard
 

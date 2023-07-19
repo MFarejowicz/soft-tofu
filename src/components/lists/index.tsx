@@ -16,6 +16,12 @@ const nameConfig: Config = {
 
 export interface List {
   name: string;
+  items?: Record<string, ListItem>;
+}
+
+export interface ListItem {
+  name: string;
+  weight: number;
 }
 
 interface Props {

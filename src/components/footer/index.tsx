@@ -8,7 +8,10 @@ export function Footer() {
     <footer className="Footer">
       <div className="Footer-content">
         <Typography.Text>
-          Made with <FireTwoTone twoToneColor="#f49d37" /> by Matt Farejowicz
+          Made with <FireTwoTone twoToneColor="#f49d37" /> by{" "}
+          <Typography.Link href="https://mfarejowicz.github.io/" target="_blank">
+            Matt Farejowicz
+          </Typography.Link>
         </Typography.Text>
       </div>
     </footer>
