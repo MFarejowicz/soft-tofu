@@ -30,7 +30,7 @@ interface Props {
 
 export function Lists({ setSelectedList }: Props) {
   const [user] = useAuthState(auth);
-  const lists = useFirebase<Record<string, List>>(`users/${user?.uid}/lists`);
+  const { data } = useFirebase<Record<string, List>>(`users/${user?.uid}/lists`);
 
   const addList = useCallback(() => {
     if (!user) {
@@ -54,7 +54,7 @@ export function Lists({ setSelectedList }: Props) {
     return null;
   }
 
-  if (!lists.value) {
+  if (!data) {
     // TODO: deal with this
     return null;
   }
@@ -62,7 +62,7 @@ export function Lists({ setSelectedList }: Props) {
   return (
     <div>
       <Space wrap>
-        {Object.entries(lists.value).map(([key, list]) => (
+        {Object.entries(data).map(([key, list]) => (
           <Card key={key} className="Lists-card" hoverable onClick={() => setSelectedList(key)}>
             {list.name}
           </Card>

@@ -1,12 +1,14 @@
-import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Input, InputNumber, Typography } from "antd";
+import { child, push, ref, set, update } from "firebase/database";
+import { useCallback, useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useFirebase } from "../../hooks/useFirebase";
-import { auth, database } from "../../firebase";
-import { List, ListItem } from "../lists";
-import { useCallback, useState } from "react";
-import { push, child, ref, update } from "firebase/database";
 import { pickManyDistinct } from "wrand/lib";
+import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
+
+import { auth, database } from "../../firebase";
+import { useFirebase } from "../../hooks/useFirebase";
+import { usePrevious } from "../../hooks/usePrevious";
+import { List, ListItem } from "../lists";
 
 interface Props {
   selectedList: string;
@@ -15,10 +17,33 @@ interface Props {
 
 export function ListDetail({ selectedList, setSelectedList }: Props) {
   const [user] = useAuthState(auth);
-  const list = useFirebase<List>(`users/${user?.uid}/lists/${selectedList}`);
+  const { data, loaded } = useFirebase<List>(`users/${user?.uid}/lists/${selectedList}`);
+  const prevLoaded = usePrevious(loaded);
+  const [name, setName] = useState<string>("");
   const [newItem, setNewItem] = useState<string>("");
   const [count, setCount] = useState<number>(1);
   const [results, setResults] = useState<string[]>([]);
+
+  // load name from firebase
+  useEffect(() => {
+    if (!prevLoaded && loaded && data?.name) {
+      setName(data.name);
+    }
+  }, [data?.name, prevLoaded, loaded]);
+
+  const handleNewName = useCallback(
+    (value: string) => {
+      if (!user || !value) {
+        return;
+      }
+
+      const userID = user.uid;
+
+      setName(value);
+      writeNewName(userID, selectedList, value);
+    },
+    [selectedList, user]
+  );
 
   const handleNewItemChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setNewItem(event.currentTarget.value);
@@ -50,11 +75,11 @@ export function ListDetail({ selectedList, setSelectedList }: Props) {
   }, []);
 
   const handleGetResults = useCallback(() => {
-    if (!list.value) {
+    if (!data) {
       return;
     }
 
-    const { items = {} } = list.value;
+    const { items = {} } = data;
 
     const test = Object.entries(items).map(([key, item]) => ({
       original: { name: item.name, id: key },
@@ -64,19 +89,19 @@ export function ListDetail({ selectedList, setSelectedList }: Props) {
     const e = pickManyDistinct(test, count);
 
     setResults(e.map((item) => item.name));
-  }, [count, list.value]);
+  }, [count, data]);
 
   if (!user) {
     // TODO: deal with this
     return null;
   }
 
-  if (!list.value) {
+  if (!data) {
     // TODO: deal with this
     return null;
   }
 
-  const { name, items = {} } = list.value;
+  const { items = {} } = data;
 
   return (
     <div style={{ width: "100%" }}>
@@ -87,7 +112,9 @@ export function ListDetail({ selectedList, setSelectedList }: Props) {
         }}
       >
         <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setSelectedList(null)} />
-        <Typography.Title level={2}>{name}</Typography.Title>
+        <Typography.Title level={2} editable={{ onChange: handleNewName }}>
+          {name}
+        </Typography.Title>
       </div>
       <div>
         {items &&
@@ -138,4 +165,10 @@ function writeNewItem(userID: string, listID: string, name: string) {
   update(ref(database), updates);
 
   return newItemKey;
+}
+
+function writeNewName(userID: string, listID: string, newName: string) {
+  const path = `users/${userID}/lists/${listID}/name`;
+
+  set(ref(database, path), newName);
 }
