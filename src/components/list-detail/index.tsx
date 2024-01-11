@@ -1,9 +1,9 @@
 import { Button, Input, InputNumber, Typography } from "antd";
-import { child, push, ref, set, update } from "firebase/database";
+import { child, push, ref, remove, update } from "firebase/database";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { pickManyDistinct } from "wrand/lib";
-import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { auth, database } from "../../firebase";
 import { useFirebase } from "../../hooks/useFirebase";
@@ -17,8 +17,11 @@ interface Props {
 
 export function ListDetail({ selectedList, setSelectedList }: Props) {
   const [user] = useAuthState(auth);
-  const { data, loaded } = useFirebase<List>(`users/${user?.uid}/lists/${selectedList}`);
+
+  const listPath = `users/${user?.uid}/lists/${selectedList}`;
+  const { data, loaded } = useFirebase<List>(listPath);
   const prevLoaded = usePrevious(loaded);
+
   const [name, setName] = useState<string>("");
   const [newItem, setNewItem] = useState<string>("");
   const [count, setCount] = useState<number>(1);
@@ -33,16 +36,14 @@ export function ListDetail({ selectedList, setSelectedList }: Props) {
 
   const handleNewName = useCallback(
     (value: string) => {
-      if (!user || !value) {
+      if (!value) {
         return;
       }
 
-      const userID = user.uid;
-
       setName(value);
-      writeNewName(userID, selectedList, value);
+      updateListName(listPath, value);
     },
-    [selectedList, user]
+    [listPath]
   );
 
   const handleNewItemChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,13 +51,11 @@ export function ListDetail({ selectedList, setSelectedList }: Props) {
   }, []);
 
   const handleAddItem = useCallback(() => {
-    if (!user || !newItem) {
+    if (!newItem) {
       return;
     }
 
-    const userID = user.uid;
-
-    const key = writeNewItem(userID, selectedList, newItem);
+    const key = writeNewItem(listPath, newItem);
 
     if (!key) {
       // TODO: handle this
@@ -64,7 +63,7 @@ export function ListDetail({ selectedList, setSelectedList }: Props) {
     }
 
     setNewItem("");
-  }, [newItem, selectedList, user]);
+  }, [listPath, newItem]);
 
   const handleCountChange = useCallback((value: number | null) => {
     if (!value) {
@@ -116,9 +115,20 @@ export function ListDetail({ selectedList, setSelectedList }: Props) {
           {name}
         </Typography.Title>
       </div>
-      <div>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr" }}>
+        <Typography.Text strong style={{ fontSize: "18px" }}>
+          Item
+        </Typography.Text>
+        <Typography.Text strong style={{ fontSize: "18px" }}>
+          Weight
+        </Typography.Text>
+        <Typography.Text strong style={{ fontSize: "18px" }}>
+          Delete
+        </Typography.Text>
         {items &&
-          Object.entries(items).map(([key, listItem]) => <div key={key}>{listItem.name}</div>)}
+          Object.entries(items).map(([key, listItem]) => (
+            <ListItemRow key={key} listPath={listPath} item={listItem} itemID={key} />
+          ))}
       </div>
       <div style={{ display: "flex", alignItems: "center", width: "300px" }}>
         <Input
@@ -126,6 +136,7 @@ export function ListDetail({ selectedList, setSelectedList }: Props) {
           bordered={false}
           value={newItem}
           onChange={handleNewItemChange}
+          onPressEnter={handleAddItem}
         />
         <Button type="text" icon={<PlusOutlined />} onClick={handleAddItem} />
       </div>
@@ -150,8 +161,61 @@ export function ListDetail({ selectedList, setSelectedList }: Props) {
   );
 }
 
-function writeNewItem(userID: string, listID: string, name: string) {
-  const path = `users/${userID}/lists/${listID}/items`;
+interface ListItemRowProps {
+  item: ListItem;
+  itemID: string;
+  listPath: string;
+}
+
+function ListItemRow({ item, itemID, listPath }: ListItemRowProps) {
+  const [name, setName] = useState<string>(item.name);
+  const [weight, setWeight] = useState<number>(item.weight);
+
+  const handleSetName = useCallback(
+    (newName: string) => {
+      updateItemName(listPath, itemID, newName);
+      setName(newName);
+    },
+    [itemID, listPath]
+  );
+
+  const handleSetWeight = useCallback(
+    (newWeight: number | null) => {
+      if (!newWeight) {
+        newWeight = 1;
+      }
+
+      updateItemWeight(listPath, itemID, newWeight);
+
+      setWeight(newWeight);
+    },
+    [itemID, listPath]
+  );
+
+  const handleDeleteItem = useCallback(() => {
+    deleteItem(listPath, itemID);
+  }, [itemID, listPath]);
+
+  return (
+    <>
+      <Typography.Text
+        style={{ cursor: "pointer" }}
+        editable={{ triggerType: ["text"], onChange: handleSetName }}
+      >
+        {name}
+      </Typography.Text>
+      <InputNumber min={1} max={100} value={weight} onChange={handleSetWeight} bordered={false} />
+      <Button type="text" icon={<DeleteOutlined />} onClick={handleDeleteItem} />
+    </>
+  );
+}
+
+/**
+ * DATABASE OPERATIONS
+ */
+
+function writeNewItem(listPath: string, name: string) {
+  const path = `${listPath}/items`;
   const newItemKey = push(child(ref(database), path)).key;
 
   if (!newItemKey) {
@@ -167,8 +231,32 @@ function writeNewItem(userID: string, listID: string, name: string) {
   return newItemKey;
 }
 
-function writeNewName(userID: string, listID: string, newName: string) {
-  const path = `users/${userID}/lists/${listID}/name`;
+function updateListName(listPath: string, newName: string) {
+  const path = `${listPath}`;
 
-  set(ref(database, path), newName);
+  const updates = { name: newName };
+
+  update(ref(database, path), updates);
+}
+
+function updateItemName(listPath: string, itemID: string, newName: string) {
+  const path = `${listPath}/items/${itemID}`;
+
+  const updates = { name: newName };
+
+  update(ref(database, path), updates);
+}
+
+function updateItemWeight(listPath: string, itemID: string, newWeight: number) {
+  const path = `${listPath}/items/${itemID}`;
+
+  const updates = { weight: newWeight };
+
+  update(ref(database, path), updates);
+}
+
+function deleteItem(listPath: string, itemID: string) {
+  const path = `${listPath}/items/${itemID}`;
+
+  remove(ref(database, path));
 }
